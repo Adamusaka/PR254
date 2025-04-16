@@ -21,12 +21,13 @@ V analizi smo izvedli:
 
 ![alt text](Slike/Opis_stat_train.png)
 
+
 - **Vizualizacije:**
 * S tem delom kode smo pregledali in vizualno prikazali, kateri stolpci v train_df in test_df vsebujejo manjkajoče vrednosti ter koliko jih je. Vidimo, da so najbolj prazne PoolQC, MiscFeature, Alley, Fence, MasVnrType...
 
 ![alt text](Slike/prazno.png)
 
-* Tukaj smo analizirali porazdelitev ciljnega atributa SalePrice. Histogram razkrije nesimetrično (desno pristransko) porazdelitev cen, kar potrjuje tudi boxplot z nekaj izrazitimi outlierji.
+* Tukaj smo analizirali porazdelitev ciljnega atributa SalePrice. Povprečje je 180921.1959 ter standardni odklon 79415.2919. Histogram razkrije nesimetrično (desno pristransko) porazdelitev cen, kar potrjuje tudi boxplot z nekaj izrazitimi outlierji.
 Ta ugotovitev pogosto vodi do uporabe log-transformacije, da podatke naredimo bolj normalno porazdeljene.
 
 ![alt text](Slike/SalePrice_Porazdelitev.png)
