@@ -2,7 +2,7 @@
 
 ## 1. Uvod
 
-V tem vmesnem poročilu predstavljamo pregled problema, uporabljenih podatkov, izvedenih analiz in glavnih rezultatov, pridobljenih s pomočjo analize podatkov iz domačega projekta in datoteke *Housing_prices_kaggle.ipynb*. Namen poročila je predstaviti problem ocenjevanja cen stanovanj in s tem pridobiti vpogled v dejavnike, ki vplivajo na ceno nepremičnine, vse to pa je v okviru dvojnem stron.
+V tem vmesnem poročilu predstavljamo pregled problema, izvedenih analiz in glavnih rezultatov, pridobljenih s pomočjo analize podatkov iz domačega projekta in datoteke *Housing_prices_kaggle.ipynb*. Namen poročila je predstaviti problem ocenjevanja cen stanovanj in s tem pridobiti vpogled v dejavnike, ki vplivajo na ceno nepremičnine, vse to pa je v okviru dvojnem stron.
 
 ## 2. Opis problema
 
@@ -10,49 +10,37 @@ Cilj analize je napovedovanje cen stanovanj na podlagi različnih vhodnih spreme
 
 ## 3. Podatki
 
-Uporabljeni podatki prihajajo iz poznanega Kaggle tekmovanja, ki se osredotoča na cene stanovanj. V podatkovnem naboru so vključeni različni atributi:
-- Kvadratura stanovanja,
-- Leto gradnje,
-- Lokacija nepremičnine,
-- Dodatne značilnosti, kot so stanje objekta in bližina javnih prevozov.
+Uporabljeni podatki prihajajo iz poznanega Kaggle tekmovanja, ki se osredotoča na cene stanovanj. Imamo dva nabora podatkov test.csv in train.csv
 
-Podatkovni nabor je bil predhodno očiščen, odstranjeni so manjkajoči podatki in morebitne anomalije, kar omogoča bolj zanesljivo analizo.
+Train.df je oblike (1460, 81) in test_df pa (1459,80), Train_df ima eno več za "SalePrice".
 
 ## 4. Izvedene analize in uporabljena orodja
 
-### 4.1 Priprava podatkov
+V analizi smo izvedli:
+- **Opisno statistiko:** Za vpogled v osnovne značilnosti podatkov, kot so povprečje, mediana in standardni odklon (samo za numerične spremenljivke).
+![alt text](Opis_stat_train.png)
 
-Za pripravo podatkov je bila izvedena:
-- Vizualna analiza porazdelitve posameznih spremenljivk,
-- Preverjanje korelacij med spremenljivkami in cenami,
-- Normalizacija podatkov, kjer je potrebno.
+- **Vizualizacije:**
+* S tem delom kode smo pregledali in vizualno prikazali, kateri stolpci v train_df in test_df vsebujejo manjkajoče vrednosti ter koliko jih je. Vidimo, da so najbolj prazne PoolQC, MiscFeature, Alley, Fence, MasVnrType...
+![alt text](prazno.png)
+* Tukaj smo analizirali porazdelitev ciljnega atributa SalePrice. Histogram razkrije nesimetrično (desno pristransko) porazdelitev cen, kar potrjuje tudi boxplot z nekaj izrazitimi outlierji.
+Ta ugotovitev pogosto vodi do uporabe log-transformacije, da podatke naredimo bolj normalno porazdeljene.
+![alt text](SalePrice_Porazdelitev.png)
+* Ta analiza nam pomaga razumeti, katere numerične spremenljivke so močno povezane z drugimi – še posebej pomembno je z SalePrice. Vidimo, da na ceno vplivajo najbolj: OverallQual (vse skupna kvaliteta), GrLivArea (stanovanjska površina nad nivojem tal),  GarageCars (velikost garaže glede na kapaciteto avtov),  FullBath (Popolne kopalnice v bivalnem delu hiše (nad tlemi)), MasVnrArea (površina opečne (ali kamnite) fasadne obloge), YearRemodAdd (datum prenove, enak datumu gradnje, če ni bilo prenove ali dozidave) ...
+![alt text](Korelacija_matrika.png)
+* V tem delu smo analizirali raznolikost kategorialnih spremenljivk. Izračunali smo, katere imajo največ unikatnih vrednosti in jih prikazali s stolpčnimi grafikoni. To pomaga odkriti morebitne dominantne kategorije ali neuravnotežene razrede.
+![alt text](Raznolikost.png)
+* Ta analiza prikazuje, kako se povprečna prodajna cena (SalePrice) razlikuje med različnimi kategorijami izbranih kategoričnih spremenljivk (v našem primeru MSZoning, Street, BldgType, HouseStyle). To omogoča vpogled v to, katere kategorije so povezane z višjimi cenami in imajo morda večji napovedni potencial v modelih.
+![alt text](image-1.png)![alt text](image-2.png)![alt text](image-3.png)![alt text](image-4.png)
 
-### 4.2 Izvedene analize
+Kasneje bomo še objektnim spremenljivkam dodelili numerične vrednosti za ocene stanj kot .npr Ex=4, Gd=3,TA=2, Fa=1, NA=0. Izvedili bomo feature engineering kot (1stFlrSF + 2ndFlrSF = TotalSF).
 
-V analizi smo uporabili:
-- **Opisno statistiko:** Za vpogled v osnovne značilnosti podatkov, kot so povprečje, mediana in standardni odklon.
-- **Korelacijska analiza:** S pomočjo korelacijskega koeficienta smo ocenili vpliv posameznih spremenljivk na ceno.
-- **Regresijski modeli:** Za napovedovanje cen smo uporabili linearno regresijo kot osnovni model. Kasneje smo primerjali rezultate z naprednejšimi tehnikami, kot so Random Forest in Gradient Boosting.
-- **Vizualizacije:** Izdelane so bile različne grafe, med drugim histogrami, razpršeni grafi in toplotne karte, ki jasno predstavljajo medsebojne odnose med spremenljivkami.
+- **Testni model:**
+Ta del kode prikazuje zelo osnovno implementacijo modela `DecisionTreeRegressor` za napovedovanje cen nepremičnin. Uporabljene so bile osnovne značilnosti, kot so velikost parcele, leto gradnje, število sob itd., brez dodatne obdelave podatkov ali optimizacije modela. 
 
-### 4.3 Uporabljena koda in orodja
+Čeprav je model preprost, lahko služi kot dobra izhodiščna točka za nadaljnje izboljšave kasneje.
+![alt text](image-5.png)
 
-Za analizo podatkov smo uporabili Python, natančneje knjižnice:
-- Pandas za manipulacijo podatkov,
-- NumPy za numerične operacije,
-- Matplotlib in Seaborn za vizualizacije,
-- Scikit-learn za implementacijo regresijskih modelov.
+## 5. Zaključek
 
-Uporabljena izvorna koda iz datoteke *Housing_prices_kaggle.ipynb* je bila vključena kot referenca v poročilu, kar omogoča sledenje metodologije in ponovljivost analiz. Osrednji del kode je bil namenjen čiščenju podatkov, modeliranju ter vizualizaciji rezultatov.
-
-## 5. Glavne ugotovitve in rezultati
-
-Med glavnimi ugotovitvami poročila so:
-- **Povezanost med kvadrato in ceno:** Večja kvadratura neposredno vpliva na višjo ceno nepremičnine.
-- **Pomembnost lokacije:** Podatki kažejo, da ima lokacija največji vpliv na ceno, kar potrjuje lokalne tržne razlike.
-- **Izboljšava modela z naprednejšimi metodami:** Naprednejši modeli, kot so Random Forest, so dosegli višjo natančnost napovedi v primerjavi z osnovno linearno regresijo.
-- **Vizualne predstavitve:** Grafi, posebej toplotna karta korelacij, so pomagali identificirati ključne dejavnike in razvrščanje značilnosti glede na njihov vpliv na ceno.
-
-## 6. Zaključek
-
-Poročilo je predstavilo celovit pregled problema napovedovanja cen nepremičnin. Uporabljeni podatki in izvedene analize so pripomogle, da lahko jasno opredelimo ključne dejavnike, ki vplivajo na ceno. Rezultati kažejo, da večina vpliva izhaja iz kvadrature nepremičnine ter njene lokacije. Nadaljnja izboljšava modelov bi lahko vključevala napredne tehnike strojnega učenja in dodatno obdelavo podatkov.
+V poročilu smo analizirali ključne značilnosti podatkov in njihov vpliv na ceno nepremičnin. Ugotovili smo pomembne povezave med spremenljivkami in izvedli osnovno testiranje modela. V nadaljevanju bomo nadgradili obdelavo in čiščenje podatkov ter preizkusili naprednejše modele za natančnejšo napoved cen.
