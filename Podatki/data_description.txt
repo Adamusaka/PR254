@@ -441,7 +441,7 @@ GarageQual: Garage quality
        Fa	Fair
        Po	Poor
        NA	No Garage
-		
+
 GarageCond: Garage condition
 
        Ex	Excellent
