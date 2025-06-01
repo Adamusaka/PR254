@@ -2,11 +2,9 @@
 
 ## 1. Uvod
 
-V tem končnem poročilu predstavljamo celovit pregled projekta napovedovanja cen nepremičnin v mestu Ames, Iowa. Nadgradili smo analize in modele, predstavljene v vmesnem poročilu, z namenom razvitja natančnejšega in robustnejšega napovednega sistema. Cilj projekta je bil poglobljeno raziskati podatkovni niz, implementirati napredne tehnike strojnega učenja, izvesti obsežno "feature engineering" ter na koncu ustvariti interaktivno spletno aplikacijo za praktično uporabo razvitega modela.
+V tem končnem poročilu predstavljamo pregled projekta napovedovanja cen nepremičnin v mestu Ames, Iowa. Nadgradili smo analize in modele, predstavljene v vmesnem poročilu, z namenom razvitja natančnejšega napovednega sistema. Cilj projekta je bil raziskati podatkovni niz, implementirati napredne tehnike strojnega učenja, izvesti "feature engineering" ter na koncu ustvariti interaktivno spletno aplikacijo za praktično uporabo razvitega modela (streamlit).
 
-Cene nepremičnin so odvisne od kompleksne kombinacije dejavnikov, ki presegajo osnovne parametre, kot so število sob ali lokacija. V tem projektu smo analizirali nabor podatkov o približno 2900 stanovanjih v Amesu, ki vsebuje 79 opisnih spremenljivk – od dimenzij kleti do bližine železniških prog. Glavni izziv je bil identifikacija najpomembnejših dejavnikov vpliva na ceno in razvoj natančnega napovednega modela.
-
-V prejšnjem, vmesnem poročilu smo ostali pri enostavnem testnem modelu, ki je služil kot izhodišče. Cilj tega končnega poročila je predstaviti pot do bistveno boljših modelov in praktične implementacije preko interaktivne spletne strani, razvite s knjižnico Streamlit.
+Cene nepremičnin so odvisne od kombinacije dejavnikov, kot so število sob ali lokacija. V tem projektu smo analizirali nabor podatkov o približno 2900 stanovanjih v Amesu, ki vsebuje 79 opisnih spremenljivk – od dimenzij kleti do bližine železniških prog. Glavni izziv je bil identifikacija najpomembnejših dejavnikov, ki vplivajo na ceno in izbiro najbolj natančnega napovednega modela.
 
 ## 2. Vir in oblika podatkov
 
@@ -20,23 +18,21 @@ Podatki so razdeljeni na tri glavne datoteke:
 * `sample_submission.csv`: Primer datoteke za oddajo napovedi v pravilni obliki.
 
 **Značilnosti podatkovnega niza:**
-Podatki so heterogeni in vključujejo:
-* **Numerične spremenljivke:** Približno 38 spremenljivk je numeričnih, kot so `LotArea` (velikost parcele), `YearBuilt` (leto izgradnje), `1stFlrSF` (kvadratura prvega nadstropja), `GrLivArea` (nadzemna bivalna površina).
-* **Kategorikalne spremenljivke:** Približno 43 spremenljivk je kategorikalnih, ki opisujejo lastnosti, kot so `MSZoning` (splošna klasifikacija cone), `Neighborhood` (fizične lokacije znotraj meja mesta Ames), `RoofStyle` (tip strehe), `Condition1` (bližina različnih pomembnih točk, npr. ceste, železnice). Nekatere od teh so ordinalne (npr. `OverallQual` - splošna kvaliteta materiala in končne obdelave, ocenjena od 1 do 10), druge pa nominalne.
-* **Manjkajoče vrednosti:** Številni stolpci vsebujejo manjkajoče vrednosti (NaN). Najpogosteje se pojavljajo v stolpcih, kot so `PoolQC` (kvaliteta bazena), `MiscFeature` (razne dodatne značilnosti), `Alley` (tip dostopa do parcele), `Fence` (kvaliteta ograje), `FireplaceQu` (kvaliteta kamina). Pravilna obravnava teh manjkajočih vrednosti je ključna za uspešno modeliranje.
-* **Časovne spremenljivke:** Podatki vsebujejo več stolpcev, povezanih s časom, kot so `YearBuilt` (leto izgradnje), `YearRemodAdd` (leto prenove), `GarageYrBlt` (leto izgradnje garaže) in `YrSold` (leto prodaje).
-
-Razumevanje teh značilnosti je bilo osnova za nadaljnje korake, vključno z eksplorativno analizo podatkov, predprocesiranjem in gradnjo modelov.
+Podatki vključujejo:
+* **Numerične spremenljivke:** npr. `LotArea` (velikost parcele), `YearBuilt` (leto izgradnje), `1stFlrSF` (kvadratura prvega nadstropja), `GrLivArea` (nadzemna bivalna površina).
+* **Kategorikalne spremenljivke:** npr. `MSZoning` (splošna klasifikacija cone), `Neighborhood` (fizične lokacije znotraj meja mesta Ames), `RoofStyle` (tip strehe), `Condition1` (bližina različnih pomembnih točk, npr. ceste, železnice, `OverallQual` - splošna kvaliteta materiala in končne obdelave, ocenjena od 1 do 10).
+* **Manjkajoče vrednosti:** Številni stolpci vsebujejo manjkajoče vrednosti (NaN). Najpogosteje se pojavljajo v stolpcih, kot so `PoolQC` (kvaliteta bazena), `MiscFeature` (razne dodatne značilnosti), `Alley` (tip dostopa do parcele), `Fence` (kvaliteta ograje), `FireplaceQu` (kvaliteta kamina).
+* **Časovne spremenljivke:** kot so `YearBuilt` (leto izgradnje), `YearRemodAdd` (leto prenove), `GarageYrBlt` (leto izgradnje garaže) in `YrSold` (leto prodaje).
 
 ## 3. Eksplorativna analiza podatkov (EDA)
 
-Preden smo se lotili gradnje kompleksnih modelov, smo izvedli temeljito eksplorativno analizo podatkov (EDA), da bi bolje razumeli strukturo, porazdelitve in medsebojne odnose med spremenljivkami. Ta faza je bila ključna za odkrivanje vzorcev, identifikacijo osamelcev in informiranje o strategijah predprocesiranja.
+Preden smo se lotili izbire kompleksnih modelov, smo izvedli EDA, da bi bolje razumeli strukturo, porazdelitve in medsebojne odnose med spremenljivkami. Ta faza je bila ključna za odkrivanje vzorcev, identifikacijo osamelcev in o strategijah predprocesiranja.
 
 **3.1. Analiza ciljne spremenljivke `SalePrice`**
 Prvi korak je bil pregled naše ciljne spremenljivke, `SalePrice`.
 * **Porazdelitev:** Ugotovili smo, da je porazdelitev prodajnih cen desno-asimetrična (pozitivno asimetrična). To pomeni, da je večina hiš prodanih po nižjih do srednjih cenah, medtem ko manjše število hiš dosega bistveno višje cene.
-    * Za stabilizacijo variance in približevanje normalni porazdelitvi, kar je pogosto koristno za linearne modele in nekatere druge algoritme, smo uporabili logaritemsko transformacijo `SalePrice` (običajno `np.log1p` ali `np.log`). Ta transformirana vrednost je bila nato uporabljena kot ciljna spremenljivka v večini naših modelov.
-* **Opisna statistika:** Povprečna cena hiše v učnem nizu je okoli $180,921, z znatnim standardnim odklonom, kar kaže na veliko variabilnost cen.
+    * Za stabilizacijo variance in približevanje normalni porazdelitvi, kar je pogosto koristno za linearne modele in nekatere druge algoritme, smo uporabili logaritemsko transformacijo `SalePrice` (običajno `np.log1p` ali `np.log`).
+* **Opisna statistika:** Povprečna cena hiše v učnem nizu je okoli $180,921.
 
 **3.2. Numerične spremenljivke**
 * **Korelacije:** Analizirali smo korelacijsko matriko med numeričnimi spremenljivkami in `SalePrice`. Najmočnejše pozitivne korelacije s `SalePrice` so pokazale:
@@ -50,55 +46,41 @@ Prvi korak je bil pregled naše ciljne spremenljivke, `SalePrice`.
     * `TotRmsAbvGrd` (Skupno število sob nad zemljo, brez kopalnic)
     * `YearBuilt` (Leto izgradnje)
     * `YearRemodAdd` (Leto prenove)
-    Visoka korelacija med nekaterimi neodvisnimi spremenljivkami (npr. `GarageCars` in `GarageArea`, `TotalBsmtSF` in `1stFlrSF` pri enonadstropnih hišah) je nakazovala na potencialno multikolinearnost, kar smo upoštevali pri izbiri značilk in "feature engineeringu".
-* **Porazdelitve:** Preučili smo porazdelitve ključnih numeričnih spremenljivk. Nekatere, kot `LotArea`, so bile prav tako desno-asimetrične.
 
 **3.3. Kategorikalne spremenljivke**
-* **Vpliv na ceno:** Za kategorikalne spremenljivke smo analizirali, kako se povprečna `SalePrice` razlikuje med različnimi kategorijami. Na primer:
+* **Vpliv na ceno:** Za kategorikalne spremenljivke smo analizirali, kako se povprečna `SalePrice` razlikuje med različnimi kategorijami (boxplot). Na primer:
     * `Neighborhood`: Cene so se močno razlikovale glede na sosesko, kar kaže na velik vpliv lokacije.
     * `MSZoning`: Različne cone so imele različne povprečne cene.
-    * `HouseStyle`: Tip hiše (npr. enonadstropna, dvonadstropna) je vplival na ceno.
-    Vizualizacije, kot so "box-ploti", so pomagale prikazati te razlike in identificirati kategorije, povezane z višjimi ali nižjimi cenami. V vmesnem poročilu (datoteka `VMESNO.md`) so prikazani grafi, ki ilustrirajo te odnose za spremenljivke `MSZoning`, `Street`, `BldgType` in `HouseStyle`.
-* **Kardinalnost:** Nekatere kategorikalne spremenljivke imajo veliko število unikatnih vrednosti (visoka kardinalnost), kar lahko predstavlja izziv pri kodiranju (npr. `Neighborhood`).
+    * `HouseStyle`: Tip hiše (npr. enonadstropna, dvonadstropna) je vplivalo na ceno.
+    Vizualizacije, kot so "box-ploti", so pomagale prikazati te razlike in identificirati kategorije, povezane z višjimi ali nižjimi cenami. Več informacij v VMESNO.md.
 
 **3.4. Manjkajoče vrednosti**
-Podrobno smo pregledali manjkajoče vrednosti. Za vsak stolpec z manjkajočimi podatki smo na podlagi `data_description.txt` ugotavljali, ali `NaN` pomeni dejansko odsotnost neke lastnosti (npr. `NaN` v `PoolQC` verjetno pomeni, da hiša nima bazena) ali pa gre za resnično manjkajoč podatek. Ta ugotovitev je bila ključna za izbiro ustrezne strategije imputacije.
+Podrobno smo pregledali manjkajoče vrednosti. Za vsak stolpec z manjkajočimi podatki smo na podlagi `data_description.txt` ugotavljali, ali `NaN` pomeni dejansko odsotnost neke lastnosti (npr. `NaN` v `PoolQC` verjetno pomeni, da hiša nima bazena) ali pa gre za resnično manjkajoč podatek.
 
-**3.5. Osamelci (Outliers)**
+**3.5. Osamelci**
 Identificirali smo potencialne osamelce, zlasti v odnosu med `GrLivArea` in `SalePrice`. Nekatere hiše z zelo veliko bivalno površino so imele relativno nizko ceno. Na podlagi analiz (in splošne prakse pri tem tekmovanju) smo se odločili za odstranitev nekaj izrazitih osamelcev iz učnega niza, saj bi lahko nesorazmerno vplivali na učni proces modela. Seznam indeksov odstranjenih osamelcev (npr. `[598, 955, ...]`) je bil uporabljen tudi v `streamlib_housing_prices.py` pri nalaganju podatkov.
-
-EDA je zagotovila trdno podlago za naslednji korak: predprocesiranje podatkov in ustvarjanje novih, bolj informativnih značilk.
 
 ## 4. Predprocesiranje podatkov in Feature Engineering
 
-Ta faza je bila ena najpomembnejših v projektu, saj kakovost vhodnih podatkov neposredno vpliva na uspešnost modelov. Osredotočili smo se na čiščenje podatkov, transformacije in, kar je ključno, na ustvarjanje novih, sintetičnih značilk ("feature engineering"), ki bolje zajemajo kompleksne odnose, relevantne za ceno nepremičnin.
+Ta faza je bila ena najpomembnejših v projektu, saj kakovost vhodnih podatkov neposredno vpliva na uspešnost modelov. 
 
 **4.1. Obravnava manjkajočih vrednosti**
-Strategija imputacije je bila odvisna od tipa spremenljivke in pomena manjkajoče vrednosti:
-* **Kategorikalne spremenljivke:**
-    * Za spremenljivke, kjer `NaN` pomeni odsotnost lastnosti (npr. `Alley`, `BsmtQual`, `BsmtCond`, `BsmtExposure`, `BsmtFinType1`, `BsmtFinType2`, `FireplaceQu`, `GarageType`, `GarageFinish`, `GarageQual`, `GarageCond`, `PoolQC`, `Fence`, `MiscFeature`), smo manjkajoče vrednosti zapolnili z nizom `'None'` ali `'NA'`.
-    * Za nekatere druge, kot je `Electrical`, smo manjkajoče vrednosti zapolnili z najpogostejšo vrednostjo (modusom).
-* **Numerične spremenljivke:**
-    * `LotFrontage`: Manjkajoče vrednosti smo imputirali z mediano `LotFrontage` za vsako sosesko (`Neighborhood`).
-    * `GarageYrBlt`: Kjer je manjkalo leto izgradnje garaže, smo uporabili leto izgradnje hiše (`YearBuilt`). Za hiše brez garaže (`GarageType` == `'None'`) je bila vrednost postavljena na 0.
-    * Za ostale numerične manjkajoče vrednosti (npr. `MasVnrArea`) smo pogosto uporabili mediano ali konstanto 0.
+Strategija imputacije (menjava null vrednosti v nekaj kot No, NA, unf, 0...) je bila odvisna od tipa spremenljivke in pomena manjkajoče vrednosti:
 
 **4.2. Transformacije spremenljivk**
 * **Logaritemska transformacija `SalePrice`:** Kot omenjeno v EDA, smo `SalePrice` transformirali z `np.log` (ali `np.log1p`) za stabilizacijo variance. Vse napovedi modelov so bile posledično na logaritmirani skali, zato smo jih pred prikazom uporabniku transformirali nazaj z `np.exp` (ali `np.expm1`).
-* **Obravnava asimetrije numeričnih značilk:** Za numerične značilke, ki so kazale močno asimetrijo, smo prav tako preučili možnost logaritemske transformacije.
 
 **4.3. Feature Engineering (Ustvarjanje novih značilk)**
-To je bil ključni del za izboljšanje napovedne moči modelov. Ustvarili smo več novih značilk, ki združujejo obstoječe ali iz njih izpeljujejo bolj smiselne informacije. Spodaj so podrobneje opisane nekatere izmed njih, skupaj z utemeljitvami, podobno kot v `KONČNO.md`:
+Ustvarili smo več novih značilk, ki združujejo obstoječe ali iz njih izpeljujejo bolj smiselne informacije. Spodaj so podrobneje opisane nekatere izmed njih, skupaj z utemeljitvami.
 
 * **`houseAge = YrSold - YearBuilt`**
     * *Zakaj?* Samo leto izgradnje (`YearBuilt`) pove, kdaj je bila hiša zgrajena, a modelu manjka kontekst, kako "stara" je hiša v času prodaje. Hiša, stara 100 let, je povsem drugačna od hiše, stare 5 let.
-    * *Kaj zajame?* Razmerje med datumom prodaje in datumom izgradnje. Starejše hiše imajo običajno več obrabe, medtem ko novejše (mlajše) hiše pogosto dosegajo višjo ceno zaradi sodobnejše gradnje, manj potrebnih popravkov itd.
-    * *Zakaj odstraniti `YearBuilt` in `YrSold` (po ustvarjanju)?* Ker se informacija o "starosti" izračuna neposredno iz njiju, je `houseAge` bolje "sintetiziran" podatek. Če bi pustili vse tri, bi imeli multikolinearnost.
+    * *Kaj zajame?* Razmerje med datumom prodaje in datumom izgradnje. Starejše hiše imajo običajno več obrabe, medtem ko novejše hiše pogosto dosegajo višjo ceno zaradi sodobnejše gradnje, manj potrebnih popravkov...
+
 
 * **`houseRemodelAge = YrSold - YearRemodAdd`**
     * *Zakaj?* Hiša, ki je bila nedavno adaptirana ali obnovljena, je običajno vredna več kot tista, ki ni bila dolgo časa prenovljena. Samo leto zadnje adaptacije (`YearRemodAdd`) modelu ne pove, koliko časa je minilo od takrat do prodaje.
     * *Kaj zajame?* Časovno razliko med prodajo in zadnjo prenovo. Če ni bilo prenove, je `YearRemodAdd` enak `YearBuilt`, torej bo `houseRemodelAge` enak `houseAge`.
-    * *Zakaj odstraniti `YearRemodAdd`?* Podobno kot pri `houseAge`, je ta nova značilka bolj neposredno uporabna.
 
 * **`IsNewHouse = (YearBuilt == YrSold).astype(int)`**
     * *Zakaj?* Popolnoma nove hiše (prodane v letu izgradnje) imajo lahko poseben premijski status na trgu.
@@ -107,27 +89,19 @@ To je bil ključni del za izboljšanje napovedne moči modelov. Ustvarili smo ve
 * **`TotalSF = GrLivArea + TotalBsmtSF`** (ali včasih `1stFlrSF + 2ndFlrSF + TotalBsmtSF`)
     * *Zakaj?* Skupna bivalna površina, vključno s kletjo, je močan indikator velikosti in posledično cene.
     * *Kaj zajame?* Celotno uporabno površino hiše.
-    * *Zakaj odstraniti originalne?* Združevanje zmanjša število dimenzij in koreliranih značilk, kar lahko pomaga modelu bolje generalizirati.
 
 * **`TotalBathrooms = FullBath + 0.5 * HalfBath + BsmtFullBath + 0.5 * BsmtHalfBath`**
     * *Zakaj?* Število kopalnic je pomembno, vendar imajo polovične kopalnice manjšo vrednost kot polne. Ta formula to uteži.
     * *Kaj zajame?* Skupno "kopalniško kapaciteto" hiše.
-    * *Zakaj odstraniti originalne?* Združena vrednost je bolj zgoščena informacija.
 
 * **`TotalPorchSF = OpenPorchSF + EnclosedPorch + ScreenPorch + WoodDeckSF + X3SsnPorch`**
     * *Zakaj?* Različne vrste verand in zunanjih površin prispevajo k vrednosti. Njihova vsota daje celotno "zunanje življenjsko površino".
     * *Kaj zajame?* Agregirano površino vseh verand in krovov.
-    * *Zakaj odstraniti originalne?* Originalni stolpci so lahko med seboj korelirani. Združena vrednost zmanjša število atributov.
-
-**Glavni razlogi za takšno "feature engineering":**
-* **Manj redundance, manj koreliranih vhodov:** Združene spremenljivke zmanjšajo možnost, da bi se model preveč "navezal" na posamezne komponente, ki so med seboj močno korelirane. Hkrati zmanjšajo število stolpcev, kar lahko pospeši učenje in zmanjša tveganje prekomernega prileganja (overfitting).
-* **Bolj direktna interpretacija za model:** Modelu ni treba sam izračunati starosti hiše ali relativne vrednosti različnih tipov kopalnic. S predhodno vključitvijo teh informacij model hitreje ujame ključne vzorce.
-* **Zajemanje interakcij in nelinearnosti:** "Skupna kvadratura" ima pogosto močnejši (in včasih bolj linearen na log-skali cene) odnos s ceno kot ločene kvadrature. Podobno velja za starost hiše.
 
 **4.4. Kodiranje kategorikalnih spremenljivk**
 Kategorikalne spremenljivke je treba pretvoriti v numerično obliko, da jih lahko modeli strojnega učenja uporabijo.
-* **Ordinalno kodiranje (Ordinal Encoding):** Uporabljeno za spremenljivke, kjer obstaja naravna hierarhija med kategorijami (npr. `ExterQual`: Excellent > Good > Average > Fair > Poor). Kategorijam smo dodelili numerične vrednosti (npr. Ex=4, Gd=3, TA=2, Fa=1, NA=0). To smo storili za značilke kot `BsmtCond`, `BsmtExposure`, `BsmtFinType1`, `BsmtFinType2`, `BsmtQual`, `ExterCond`, `ExterQual`, `FireplaceQu`, `Functional`, `GarageCond`, `GarageFinish`, `GarageQual`, `HeatingQC`, `KitchenQual`, `LandSlope`, `LotShape`, `PavedDrive`, `PoolQC`, `Utilities`.
-* **"One-Hot" kodiranje (One-Hot Encoding):** Uporabljeno za nominalne kategorikalne spremenljivke, kjer ni intrinzičnega vrstnega reda (npr. `Neighborhood`, `MSZoning`). Vsaka kategorija postane nov binarni stolpec (0 ali 1). To preprečuje, da bi model napačno interpretiral vrstni red med kategorijami. Za zmanjšanje dimenzionalnosti smo uporabili parameter `handle_unknown='ignore'` ali združili redke kategorije.
+* **Ordinalno kodiranje:** Uporabljeno za spremenljivke, kjer obstaja naravna hierarhija med kategorijami (npr. `ExterQual`: Excellent > Good > Average > Fair > Poor). Kategorijam smo dodelili numerične vrednosti (npr. Ex=4, Gd=3, TA=2, Fa=1, NA=0).
+* **"One-Hot" kodiranje:** Uporabljeno za nominalne kategorikalne spremenljivke, kjer ni vrstnega reda (npr. `Neighborhood`, `MSZoning`). Vsaka kategorija postane nov binarni stolpec (0 ali 1). To preprečuje, da bi model napačno interpretiral vrstni red med kategorijami. (handle_unknown='ignore')
 
 **4.5. Skaliranje numeričnih spremenljivk**
 Po imputaciji in "feature engineeringu" smo vse numerične spremenljivke skalirali s `StandardScaler` iz knjižnice `scikit-learn`. Ta postopek transformira podatke tako, da imajo povprečje 0 in standardni odklon 1. Skaliranje je pomembno za modele, ki so občutljivi na merilo vhodnih spremenljivk, kot so linearni modeli z regularizacijo (Ridge, Lasso), SVM in nevronske mreže. Pomaga tudi pri hitrejši konvergenci algoritmov, ki temeljijo na gradientnem spustu.
