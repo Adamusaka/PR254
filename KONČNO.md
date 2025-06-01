@@ -70,6 +70,8 @@ Strategija imputacije (menjava null vrednosti v nekaj kot No, NA, unf, 0...) je 
 **4.2. Transformacije spremenljivk**
 * **Logaritemska transformacija `SalePrice`:** Kot omenjeno v EDA, smo `SalePrice` transformirali z `np.log` (ali `np.log1p`) za stabilizacijo variance. Vse napovedi modelov so bile posledično na logaritmirani skali, zato smo jih pred prikazom uporabniku transformirali nazaj z `np.exp` (ali `np.expm1`).
 
+<img src="Slike/pred log transform.png" alt="log transform pred" width="500"/> <img src="Slike/Log transform.png" alt="Log transform" width="500"/> 
+
 **4.3. Feature Engineering (Ustvarjanje novih značilk)**
 Ustvarili smo več novih značilk, ki združujejo obstoječe ali iz njih izpeljujejo bolj smiselne informacije. Spodaj so podrobneje opisane nekatere izmed njih, skupaj z utemeljitvami.
 
@@ -93,6 +95,10 @@ Ustvarili smo več novih značilk, ki združujejo obstoječe ali iz njih izpelju
     * *Zakaj?* Število kopalnic je pomembno, vendar imajo polovične kopalnice manjšo vrednost kot polne. Ta formula to uteži.
     * *Kaj zajame?* Skupno "kopalniško kapaciteto" hiše.
 ... in še nekaj ostalih.
+
+Nova korelacijska matrika:
+
+<img src="Slike/nova korelacija.png" alt="Nova korelacijska matrika" width="1000"/>
 
 **4.4. Kodiranje kategorikalnih spremenljivk**
 Kategorikalne spremenljivke je treba pretvoriti v numerično obliko, da jih lahko modeli strojnega učenja uporabijo.
@@ -196,6 +202,8 @@ Za razvoj aplikacije so bile uporabljene naslednje ključne knjižnice in tehnol
 ## 8. Zaključek
 
 Projekt napovedovanja cen nepremičnin v Amesu je ponudil vpogled v celoten proces strojnega učenja, od razumevanja in priprave podatkov do gradnje kompleksnih modelov in njihove implementacije v uporabniku prijazno aplikacijo. Na tekmovanju Kaggle smo se uvrstili na 862/4784 mesto.
+
+<img src="Slike/Uvrstitev.png" alt="Uvrstitev" width="700"/>
 
 **Glavne ugotovitve:**
 * **Kakovost podatkov je ključna**
