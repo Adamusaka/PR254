@@ -151,7 +151,7 @@ Za ključne modele so bili hiperparametri nastavljeni na podlagi predhodnih eksp
 Po obsežnem predprocesiranju, "feature engineeringu" in treniranju različnih modelov smo dosegli izboljšanje napovedne natančnosti.
 
 **6.1. Primerjava uspešnosti modelov**
-Končni `StackingRegressor`, ki je združeval napovedi XGBoost, LightGBM, CatBoost in Ridge regresije z RidgeCV kot meta-modelom, je pokazal najboljše rezultate, dosegel RMSLE okoli 0.12. Datoteka `submission.csv` je bila generirana s tem modelom.
+Končni `StackingRegressor`, ki je združeval napovedi XGBoost, LightGBM, CatBoost in Ridge regresije z RidgeCV kot meta-modelom, je pokazal najboljše rezultate, dosegel RMSE okoli 0.12. Datoteka `submission.csv` je bila generirana s tem modelom.
 
 **6.2. Pomembnost značilk**
 Analiza pomembnosti značilk (npr. iz `RandomForestRegressor`) je pokazala, da so najvplivnejše:
