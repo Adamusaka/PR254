@@ -10,10 +10,10 @@ V prejšnjem, vmesnem poročilu smo ostali pri enostavnem testnem modelu, ki je 
 
 ## 2. Vir in oblika podatkov
 
-Podatki, uporabljeni v tem projektu, izvirajo iz tekmovanja ["House Prices - Advanced Regression Techniques"](https://www.kaggle.com/competitions/home-data-for-ml-course) na platformi Kaggle. Tekmovanje ponuja bogat nabor podatkov, idealen za raziskovanje in modeliranje cen nepremičnin.
+Podatki, uporabljeni v tem projektu so iz tekmovanja ["House Prices - Advanced Regression Techniques"](https://www.kaggle.com/competitions/home-data-for-ml-course) na platformu Kaggle. 
 
 **Struktura podatkov:**
-Podatkovni set je razdeljen na tri glavne datoteke:
+Podatki so razdeljeni na tri glavne datoteke:
 * `train.csv`: Učni niz, ki vsebuje 1460 zapisov (hiš) in 81 stolpcev. Med temi stolpci je tudi naša ciljna spremenljivka `SalePrice` (prodajna cena).
 * `test.csv`: Testni niz, ki vsebuje 1459 zapisov in 80 stolpcev. Ta niz ne vsebuje stolpca `SalePrice`, saj je naloga napovedati te vrednosti.
 * `data_description.txt`: Podroben opis vsake od 79 značilk (spremenljivk), ki pojasnjuje pomen posameznega stolpca. Ta datoteka je ključna za razumevanje podatkov in informirano "feature engineering".
