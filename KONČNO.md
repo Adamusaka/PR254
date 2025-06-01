@@ -77,7 +77,6 @@ Ustvarili smo več novih značilk, ki združujejo obstoječe ali iz njih izpelju
     * *Zakaj?* Samo leto izgradnje (`YearBuilt`) pove, kdaj je bila hiša zgrajena, a modelu manjka kontekst, kako "stara" je hiša v času prodaje. Hiša, stara 100 let, je povsem drugačna od hiše, stare 5 let.
     * *Kaj zajame?* Razmerje med datumom prodaje in datumom izgradnje. Starejše hiše imajo običajno več obrabe, medtem ko novejše hiše pogosto dosegajo višjo ceno zaradi sodobnejše gradnje, manj potrebnih popravkov...
 
-
 * **`houseRemodelAge = YrSold - YearRemodAdd`**
     * *Zakaj?* Hiša, ki je bila nedavno adaptirana ali obnovljena, je običajno vredna več kot tista, ki ni bila dolgo časa prenovljena. Samo leto zadnje adaptacije (`YearRemodAdd`) modelu ne pove, koliko časa je minilo od takrat do prodaje.
     * *Kaj zajame?* Časovno razliko med prodajo in zadnjo prenovo. Če ni bilo prenove, je `YearRemodAdd` enak `YearBuilt`, torej bo `houseRemodelAge` enak `houseAge`.
@@ -90,13 +89,10 @@ Ustvarili smo več novih značilk, ki združujejo obstoječe ali iz njih izpelju
     * *Zakaj?* Skupna bivalna površina, vključno s kletjo, je močan indikator velikosti in posledično cene.
     * *Kaj zajame?* Celotno uporabno površino hiše.
 
-* **`TotalBathrooms = FullBath + 0.5 * HalfBath + BsmtFullBath + 0.5 * BsmtHalfBath`**
+* **`totalBaths = FullBath + 0.5 * HalfBath + BsmtFullBath + 0.5 * BsmtHalfBath`**
     * *Zakaj?* Število kopalnic je pomembno, vendar imajo polovične kopalnice manjšo vrednost kot polne. Ta formula to uteži.
     * *Kaj zajame?* Skupno "kopalniško kapaciteto" hiše.
-
-* **`TotalPorchSF = OpenPorchSF + EnclosedPorch + ScreenPorch + WoodDeckSF + X3SsnPorch`**
-    * *Zakaj?* Različne vrste verand in zunanjih površin prispevajo k vrednosti. Njihova vsota daje celotno "zunanje življenjsko površino".
-    * *Kaj zajame?* Agregirano površino vseh verand in krovov.
+... in še nekaj ostalih.
 
 **4.4. Kodiranje kategorikalnih spremenljivk**
 Kategorikalne spremenljivke je treba pretvoriti v numerično obliko, da jih lahko modeli strojnega učenja uporabijo.
@@ -104,25 +100,26 @@ Kategorikalne spremenljivke je treba pretvoriti v numerično obliko, da jih lahk
 * **"One-Hot" kodiranje:** Uporabljeno za nominalne kategorikalne spremenljivke, kjer ni vrstnega reda (npr. `Neighborhood`, `MSZoning`). Vsaka kategorija postane nov binarni stolpec (0 ali 1). To preprečuje, da bi model napačno interpretiral vrstni red med kategorijami. (handle_unknown='ignore')
 
 **4.5. Skaliranje numeričnih spremenljivk**
-Po imputaciji in "feature engineeringu" smo vse numerične spremenljivke skalirali s `StandardScaler` iz knjižnice `scikit-learn`. Ta postopek transformira podatke tako, da imajo povprečje 0 in standardni odklon 1. Skaliranje je pomembno za modele, ki so občutljivi na merilo vhodnih spremenljivk, kot so linearni modeli z regularizacijo (Ridge, Lasso), SVM in nevronske mreže. Pomaga tudi pri hitrejši konvergenci algoritmov, ki temeljijo na gradientnem spustu.
+Po imputaciji in "feature engineeringu" smo vse numerične spremenljivke skalirali s `StandardScaler`. Ta postopek transformira podatke tako, da imajo povprečje 0 in standardni odklon 1.
 
 **4.6. Uporaba `Pipeline`**
-Vse korake predprocesiranja (imputacija, kodiranje, skaliranje) smo združili v `ColumnTransformer` in nato v `Pipeline` iz `scikit-learn`. To zagotavlja, da se enaki koraki predprocesiranja konsistentno uporabijo tako na učnih kot na testnih podatkih (in kasneje na novih podatkih v spletni aplikaciji), kar preprečuje uhajanje podatkov ("data leakage") in poenostavlja delovni tok. Ta pristop je bil implementiran v `Housing_prices_kaggle_2.ipynb` in posledično v `streamlib_housing_prices.py`.
+Vse korake predprocesiranja (imputacija, kodiranje, skaliranje) smo združili v `ColumnTransformer` in nato v `Pipeline`. To zagotavlja, da se enaki koraki predprocesiranja uporabijo tako na učnih kot na testnih podatkih, kar preprečuje "data leakage".
 
-## 5. Gradnja modelov
+## 5. Izbira modelov
 
-Po skrbni pripravi podatkov smo prešli na fazo gradnje in ocenjevanja različnih regresijskih modelov. Cilj je bil najti model, ki najbolje generalizira na nevidene podatke in doseže najnižjo napako napovedi.
+Po skrbni pripravi podatkov smo prešli na fazo treniranja in ocenjevanja različnih modelov. Cilj je bil najti model, ki najbolje generalizira na podatke in doseže najnižjo napako napovedi (najnižji RMSE).
 
 **5.1. Izhodiščni model (Baseline)**
-Kot je bilo omenjeno v vmesnem poročilu (`VMESNO.md`) in prikazano v `Housing_prices_kaggle.ipynb`, smo najprej zgradili preprost model `DecisionTreeRegressor` z uporabo le nekaj osnovnih značilk. Ta model je služil kot osnovna referenca za primerjavo z naprednejšimi pristopi.
+Kot je bilo omenjeno v vmesnem poročilu, smo najprej zgradili preprost model `DecisionTreeRegressor` z uporabo le nekaj osnovnih značilk. Ta model je služil kot osnovna referenca za primerjavo z naprednejšimi pristopi.
 
 **5.2. Izbor in trening naprednejših modelov**
-V `Housing_prices_kaggle_2.ipynb` in nato preneseno v `streamlib_housing_prices.py` smo implementirali in preizkusili vrsto naprednejših regresijskih modelov:
+Implementirali in preizkusili smo vrsto naprednejših regresijskih modelov:
 
 * **Linearni modeli:**
-    * `Ridge Regression`: Linearna regresija z L2 regularizacijo.
+    * `Linear Regression`
+    * `Ridge Regression`.
 
-* **Drevesni ansambelski modeli:**
+* **Drevesni modeli:**
     * `RandomForestRegressor`
     * `GradientBoostingRegressor`
     * `XGBRegressor` (XGBoost)
@@ -137,22 +134,22 @@ Za dodatno izboljšanje napovedi smo uporabili ansambelske tehnike, ki združuje
 
 * **`StackingRegressor` (Zlaganje modelov):**
     * **Nivo 0 (Base Learners):** Modeli kot XGBoost, LightGBM, CatBoost, Ridge.
-    * **Nivo 1 (Meta-Learner/Blender):** `RidgeCV`.
+    * **Nivo 1 (Meta-Learner):** `RidgeCV`.
     * Ta pristop se je izkazal za najuspešnejšega.
 
 **5.4. Optimizacija hiperparametrov**
-Za ključne modele so bili hiperparametri nastavljeni na podlagi predhodnih eksperimentov in splošnih dobrih praks, kot je vidno v `Housing_prices_kaggle_2.ipynb`.
+Za ključne modele so bili hiperparametri nastavljeni na podlagi predhodnih eksperimentov in dobrih praks.
 
 **5.5. Metrika uspešnosti**
-Glavna metrika za ocenjevanje modelov je bila korenska povprečna kvadratna logaritemska napaka (RMSLE - Root Mean Squared Logarithmic Error).
+Glavna metrika za ocenjevanje modelov je bila RMSLE - Root Mean Squared Logarithmic Error.
 $$ \text{RMSLE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (\log(p_i + 1) - \log(a_i + 1))^2} $$
 
 ## 6. Rezultati in diskusija
 
-Po obsežnem predprocesiranju, "feature engineeringu" in treniranju različnih modelov smo dosegli znatno izboljšanje napovedne natančnosti.
+Po obsežnem predprocesiranju, "feature engineeringu" in treniranju različnih modelov smo dosegli izboljšanje napovedne natančnosti.
 
 **6.1. Primerjava uspešnosti modelov**
-Končni `StackingRegressor`, ki je združeval napovedi XGBoost, LightGBM, CatBoost in Ridge regresije z RidgeCV kot meta-modelom, je pokazal najboljše rezultate, dosegel RMSLE okoli 0.11 - 0.12 na Kaggle. Datoteka `submission.csv` je bila generirana s tem modelom.
+Končni `StackingRegressor`, ki je združeval napovedi XGBoost, LightGBM, CatBoost in Ridge regresije z RidgeCV kot meta-modelom, je pokazal najboljše rezultate, dosegel RMSLE okoli 0.12. Datoteka `submission.csv` je bila generirana s tem modelom.
 
 **6.2. Pomembnost značilk**
 Analiza pomembnosti značilk (npr. iz `RandomForestRegressor`) je pokazala, da so najvplivnejše:
@@ -164,82 +161,41 @@ Analiza pomembnosti značilk (npr. iz `RandomForestRegressor`) je pokazala, da s
 6.  `BsmtQual`
 7.  `Neighborhood`
 
-**6.3. Vpliv "Feature Engineeringa"**
-Izkazalo se je, da je skrbno načrtovanje novih značilk ključnega pomena za izboljšanje rezultatov.
+## 7. Streamlit spletna aplikacija
 
-**6.4. Diskusija**
-Kombinacija robustnega predprocesiranja, inteligentnega "feature engineeringa" in uporabe naprednih ansambelskih tehnik vodi do visoko natančnih napovednih modelov.
+Da bi omogočili praktično uporabo in lažjo interakcijo z modelom, smo zgradili interaktivno spletno aplikacijo s pomočjo Streamlit.
 
-## 7. Interaktivna spletna aplikacija (Streamlit)
-
-Da bi omogočili praktično uporabo in lažjo interakcijo z razvitim napovednim modelom, smo zgradili interaktivno spletno aplikacijo s pomočjo knjižnice Streamlit. Koda za to aplikacijo se nahaja v datoteki `streamlib_housing_prices.py`.
-
-**7.1. Namen in cilji aplikacije**
+**7.1. Namen in cilj aplikacije**
 Glavni namen aplikacije je uporabnikom omogočiti:
-1.  **Pridobivanje ocen cen za posamezno nepremičnino:** Uporabniki lahko vnesejo specifične značilnosti hiše in takoj prejmejo oceno njene prodajne cene.
+1.  **Pridobivanje napovedanih cen za neko poljubno nepremičnino:** Uporabniki lahko vnesejo specifične značilnosti hiše in takoj prejmejo ocenjeno ceno take hiše.
 2.  **Enostavna in intuitivna uporaba:** Zagotoviti vmesnik, ki ne zahteva predznanja s področja programiranja ali strojnega učenja.
-3.  **Demonstracija modela:** Prikazati praktično uporabnost razvitega napovednega sistema.
+3.  **Demonstracija modela:** Prikazati uporabnost razvitega napovednega sistema.
 
 **7.2. Glavne funkcionalnosti aplikacije (`streamlib_housing_prices.py`)**
 
 * **Nalaganje podatkov, predprocesiranje in treniranje modela (v ozadju ob prvem zagonu):**
-    * Aplikacija pri prvem zagonu (ali ko se predpomnilnik osveži) izvede celoten postopek priprave modela. To vključuje:
-        * Nalaganje osnovnega učnega niza (`train.csv`).
-        * Temeljito čiščenje podatkov: odstranjevanje definiranih osamelcev in logaritemska transformacija ciljne spremenljivke `SalePrice` (z `np.log`).
-        * Izvedba obsežnega "feature engineeringa": ustvarjanje novih, bolj informativnih značilk, kot so `houseAge` (starost hiše), `houseRemodelAge` (starost od prenove), `IsNewHouse` (ali je hiša nova), `TotalSF` (skupna kvadratura), `TotalBathrooms` (skupno število kopalnic), `TotalPorchSF` (skupna površina verand) itd. Starejše, manj informativne značilke se pri tem odstranijo.
-        * Definicija in uporaba robustnega `ColumnTransformer` cevovoda (`Pipeline`) za predprocesiranje. Ta cevovod skrbi za:
-            * Imputacijo manjkajočih vrednosti (z mediano za numerične, s konstanto 'NA' ali modusom za kategorikalne).
-            * Ordinalno kodiranje za kategorikalne značilke z naravnim vrstnim redom.
-            * "One-hot" kodiranje za nominalne kategorikalne značilke (z obravnavo neznanih kategorij).
-            * Standardno skaliranje (`StandardScaler`) za vse numerične značilke.
-        * Treniranje več različnih regresijskih modelov, vključno z `Ridge`, `RandomForestRegressor`, `GradientBoostingRegressor`, `XGBRegressor`, `CatBoostRegressor`.
-        * Treniranje končnega ansambelskega modela `StackingRegressor`, ki kot osnovne učence uporablja prej naštete modele, za meta-učenca pa `RidgeCV`. Ta model se nato uporablja za končne napovedi.
-    * Celoten ta postopek (nalaganje, čiščenje, "feature engineering", definiranje cevovoda in treniranje modelov) je optimiziran z uporabo Streamlitove funkcije `@st.cache_resource`. To pomeni, da se vsi ti koraki izvedejo le enkrat ob prvem zagonu aplikacije ali ob spremembi odvisnosti, kar zagotavlja hitro odzivnost aplikacije pri nadaljnji uporabi. Funkcija vrne natreniran najboljši model (StackingRegressor), cevovod za predprocesiranje, imena značilk in druge pomožne podatke.
-
-* **Dinamični vnosni vmesnik za značilke nepremičnine:**
-    * V stranski vrstici aplikacije (`st.sidebar`) se dinamično generirajo vnosna polja za vse značilke, ki jih model potrebuje za napoved. Seznam teh značilk se pridobi iz podatkovnega nabora `train_df_for_input_features`, ki nastane med pripravo podatkov.
-    * Za **numerične značilke** (npr. `LotArea` - velikost parcele, `YearBuilt` - leto izgradnje, `GrLivArea` - bivalna površina) so na voljo drsniki (`st.slider`) z razumno prednastavljenimi minimalnimi, maksimalnimi in privzetimi vrednostmi, izpeljanimi iz učnega niza.
-    * Za **kategorikalne značilke** (npr. `Neighborhood` - soseska, `HouseStyle` - tip hiše, `OverallQual` - splošna kvaliteta) so na voljo spustni seznami (`st.selectbox`), ki vsebujejo vse možne kategorije za dano značilko, prav tako pridobljene iz učnega niza.
-    * Uporabnik lahko interaktivno nastavi vrednosti za vsako od teh značilk, da opiše hipotetično ali dejansko nepremičnino, za katero želi oceno cene.
+    * Aplikacija pri prvem zagonu (ali ko se predpomnilnik osveži) izvede celoten postopek priprave modela.
 
 * **Napovedovanje cene za vnesene značilke:**
-    * Ko uporabnik vnese (ali spremeni) vrednosti značilk v stranski vrstici, aplikacija te vnose zbere in jih pretvori v Pandas DataFrame z enim samim primerom (eno vrstico).
-    * Na ta DataFrame se nato uporabi pred-naučen `Pipeline` (predprocesor), ki izvede vse potrebne transformacije (imputacijo, kodiranje, skaliranje), enako kot pri učenju modela.
-    * Transformirani podatki se nato posredujejo pred-naučenemu `StackingRegressor` modelu, ki izračuna napoved. Ker je bil model učen na logaritmirani vrednosti `SalePrice`, je tudi njegova surova napoved na tej logaritmirani skali.
-    * Končna napoved cene se dobi z inverzno transformacijo, tj. z eksponentno funkcijo (`np.exp(prediction_log)`).
+    * Ko uporabnik vnese (ali spremeni) vrednosti značilk v stranski vrstici.
 
 * **Prikaz rezultata:**
-    * Ocenjena prodajna cena hiše se jasno in vidno prikaže uporabniku na glavni strani aplikacije, običajno znotraj sporočila o uspehu (`st.success`), formatirana na dve decimalni mesti in z oznako valute (npr. `💰 Ocenjena cena hiše: $250,123.45`).
+    * Ocenjena prodajna cena hiše se prikaže uporabniku na glavni strani aplikacije, znotraj sporočila o uspehu.
 
 **7.3. Tehnološki sklop**
 Za razvoj aplikacije so bile uporabljene naslednje ključne knjižnice in tehnologije:
-* **Streamlit:** Za hitro in enostavno izdelavo interaktivnega spletnega vmesnika.
-* **Pandas:** Za manipulacijo s podatki in pripravo vhodnih DataFrame-ov.
-* **NumPy:** Za numerične operacije, še posebej za logaritemsko in eksponentno transformacijo.
-* **Scikit-learn:** Za celoten cevovod strojnega učenja, vključno s `ColumnTransformer` za predprocesiranje, `Pipeline` za združevanje korakov, različnimi modeli (`Ridge`, `RandomForestRegressor`, `GradientBoostingRegressor`) in ansambelskimi metodami (`StackingRegressor`).
-* **XGBoost, CatBoost, (LightGBM, čeprav ni eksplicitno viden v `streamlib_housing_prices.py` snippetu, je pogosto del takih skladov):** Za napredne in visoko zmogljive regresijske modele, ki so del ansambla.
-
-**7.4. Uporabnost**
-Interaktivna aplikacija, zgrajena s `streamlib_housing_prices.py`, bistveno poveča uporabnost in dostopnost razvitega modela napovedovanja cen nepremičnin. Uporabnikom omogoča:
-* **Hitre individualne ocene:** Nepremičninski agenti, potencialni kupci ali prodajalci lahko hitro pridobijo oceno vrednosti za specifično nepremičnino z vnosom njenih ključnih lastnosti.
-* **"Kaj-če" analize:** Uporabniki lahko eksperimentirajo z različnimi vrednostmi značilk (npr. "Kaj če bi bila hiša novejša?" ali "Koliko bi bila vredna z boljšo kvaliteto kuhinje?") in takoj vidijo vpliv na ocenjeno ceno.
-* **Intuitivno razumevanje dejavnikov:** Čeprav aplikacija neposredno ne prikazuje pomembnosti značilk v grafu, interaktivno spreminjanje vrednosti in opazovanje sprememb v ceni lahko uporabniku da intuitiven občutek o tem, kateri dejavniki imajo večji vpliv.
-Aplikacija služi kot odličen primer, kako se lahko kompleksni modeli strojnega učenja preobrazijo v praktična, enostavna za uporabo orodja, ki nudijo konkretno vrednost končnim uporabnikom brez potrebe po tehničnem znanju o ozadju modeliranja.
+* **Streamlit**
+* **Pandas**
+* **NumPy**
+* **Scikit-learn**
+* **XGBoost, CatBoost**
 
 ## 8. Zaključek
 
-Projekt napovedovanja cen nepremičnin v Amesu je ponudil dragocen vpogled v celoten proces strojnega učenja, od razumevanja in priprave podatkov do gradnje kompleksnih modelov in njihove implementacije v uporabniku prijazno aplikacijo.
+Projekt napovedovanja cen nepremičnin v Amesu je ponudil vpogled v celoten proces strojnega učenja, od razumevanja in priprave podatkov do gradnje kompleksnih modelov in njihove implementacije v uporabniku prijazno aplikacijo.
 
 **Glavne ugotovitve:**
-* **Kakovost podatkov je ključna:** Temeljita eksplorativna analiza podatkov, skrbno ravnanje z manjkajočimi vrednostmi in učinkovito kodiranje kategorikalnih spremenljivk so osnova za uspešno modeliranje.
-* **"Feature engineering" prinaša veliko vrednost:** Ustvarjanje novih, smiselnih značilk (npr. starost hiše, skupna površina, skupno število kopalnic) lahko bistveno izboljša natančnost modelov, saj jim ponudi informacije v bolj neposredni in lažje prebavljivi obliki.
-* **Napredni ansambelski modeli so zelo učinkoviti:** Modeli, kot so XGBoost, LightGBM in CatBoost, so se izkazali za zelo natančne. Njihova kombinacija z uporabo tehnik zlaganja (stacking) je omogočila doseganje vrhunskih rezultatov, ki so konkurenčni na platformah, kot je Kaggle.
-* **Praktična uporabnost:** Razvoj interaktivne spletne aplikacije s Streamlitom je pokazal, kako lahko napredne analitične modele približamo končnim uporabnikom in jim omogočimo praktično uporabo rezultatov.
-
-**Potencialne nadaljnje izboljšave:**
-* **Naprednejše tehnike "feature engineeringa":** Raziskovanje dodatnih interakcij med značilkami ali uporaba bolj sofisticiranih metod za ustvarjanje značilk (npr. grupiranje sosesk glede na ceno).
-* **Obsežnejša optimizacija hiperparametrov:** Uporaba naprednejših orodij za optimizacijo (npr. Optuna, Hyperopt) za fino nastavitev vseh modelov v ansamblu.
-* **Obravnava časovne komponente:** Eksplicitnejše modeliranje časovnih trendov v cenah nepremičnin, če bi podatki zajemali daljše obdobje.
-* **Interpretacija modela:** Globlja analiza interpretacije napovedi kompleksnih modelov (npr. z uporabo SHAP vrednosti) za boljše razumevanje, zakaj model naredi določeno napoved, in morda integracija teh vpogledov v Streamlit aplikacijo.
-
-Ta projekt je uspešno demonstriral uporabo sodobnih tehnik strojnega učenja za reševanje realnega problema napovedovanja cen nepremičnin. Od začetne analize podatkov v `Housing_prices_kaggle.ipynb`, preko razvoja naprednih modelov v `Housing_prices_kaggle_2.ipynb`, do končne implementacije v interaktivni aplikaciji `streamlib_housing_prices.py`, smo prehodili celoten cikel podatkovne znanosti in ustvarili robusten ter uporaben napovedni sistem.
+* **Kakovost podatkov je ključna**
+* **"Feature engineering" prinaša veliko vrednost**
+* **Napredni ansambelski modeli so zelo učinkoviti**
+* **Praktična uporabnost:** Streamlit je pokazal, kako lahko napredne analitične modele približamo končnim uporabnikom in jim omogočimo praktično uporabo rezultatov.
