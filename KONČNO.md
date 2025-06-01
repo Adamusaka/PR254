@@ -195,7 +195,7 @@ Za razvoj aplikacije so bile uporabljene naslednje ključne knjižnice in tehnol
 
 ## 8. Zaključek
 
-Projekt napovedovanja cen nepremičnin v Amesu je ponudil vpogled v celoten proces strojnega učenja, od razumevanja in priprave podatkov do gradnje kompleksnih modelov in njihove implementacije v uporabniku prijazno aplikacijo.
+Projekt napovedovanja cen nepremičnin v Amesu je ponudil vpogled v celoten proces strojnega učenja, od razumevanja in priprave podatkov do gradnje kompleksnih modelov in njihove implementacije v uporabniku prijazno aplikacijo. Na tekmovanju Kaggle smo se uvrstili na 862/4784 mesto.
 
 **Glavne ugotovitve:**
 * **Kakovost podatkov je ključna**
