@@ -85,7 +85,7 @@ Ustvarili smo več novih značilk, ki združujejo obstoječe ali iz njih izpelju
     * *Zakaj?* Popolnoma nove hiše (prodane v letu izgradnje) imajo lahko poseben premijski status na trgu.
     * *Kaj zajame?* Binarna značilka, ki označuje, ali je bila hiša prodana v istem letu, ko je bila zgrajena.
 
-* **`TotalSF = GrLivArea + TotalBsmtSF`** (ali včasih `1stFlrSF + 2ndFlrSF + TotalBsmtSF`)
+* **`TotalSF = GrLivArea + TotalBsmtSF`**
     * *Zakaj?* Skupna bivalna površina, vključno s kletjo, je močan indikator velikosti in posledično cene.
     * *Kaj zajame?* Celotno uporabno površino hiše.
 
