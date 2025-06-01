@@ -23,16 +23,14 @@ st.title("Napoved cen nepremičnin – Kaggle Housing Prices")
 
 @st.cache(allow_output_mutation=True)
 def load_and_clean_data():
-    # Naloži train in test CSV
+
     train_df = pd.read_csv("./Podatki/train.csv")
     test_df  = pd.read_csv("./Podatki/test.csv")
     
-    # Odstranimo ide posameznih osamelcev (z ID vrednosti iz beležnice)
     outliers = [598, 955, 935, 1299, 250, 314, 336, 707, 379, 1183, 692, 186, 
                 441, 524, 739, 636, 1062, 1191, 496, 198, 1338]
     train_df = train_df[~train_df["Id"].isin(outliers)].reset_index(drop=True)
     
-    # Nadomestimo manjkajoče vrednosti
     objectAtrib = ['FireplaceQu', 'MasVnrType', 'Fence', 'Alley', 
                    'GarageCond', 'GarageFinish', 'GarageQual', 
                    'BsmtExposure', 'BsmtQual', 'BsmtCond']
@@ -54,13 +52,11 @@ def load_and_clean_data():
     train_df['Electrical'].fillna('SBrkr', inplace=True)
     test_df['Electrical'].fillna('SBrkr', inplace=True)
 
-    # Odstranimo stolpce, ki niso koristni ali imajo preveč NaN
     drop_cols = ['PoolQC', 'MiscFeature', 'Alley', 'Fence',
                  'GarageYrBlt', 'GarageCond', 'BsmtFinType2']
     train_df.drop(columns=drop_cols, inplace=True, errors='ignore')
     test_df.drop(columns=drop_cols, inplace=True, errors='ignore')
 
-    # Feature engineering
     train_df['houseAge']       = train_df['YrSold'] - train_df['YearBuilt']
     test_df['houseAge']        = test_df['YrSold']  - test_df['YearBuilt']
     train_df['houseRemodelAge']= train_df['YrSold'] - train_df['YearRemodAdd']
@@ -82,7 +78,6 @@ def load_and_clean_data():
                                   test_df['EnclosedPorch'] + test_df['ScreenPorch'] +
                                   test_df['WoodDeckSF'])
 
-    # Odstranimo stolpce, ki smo jih združili ali niso več potrebni
     drop_after_eng = [
         'Id', 'YrSold', 'YearBuilt', 'YearRemodAdd',
         '1stFlrSF', '2ndFlrSF', 'BsmtFinSF1', 'BsmtFinSF2',
@@ -93,7 +88,6 @@ def load_and_clean_data():
     train_df.drop(columns=drop_after_eng, inplace=True, errors='ignore')
     test_df.drop(columns=drop_after_eng, inplace=True, errors='ignore')
 
-    # Log-transformacija ciljne spremenljivke
     train_df['SalePrice'] = np.log1p(train_df['SalePrice'])
 
     return train_df, test_df
@@ -268,7 +262,7 @@ if uploaded_file is not None:
         output_df["PredictedSalePrice"] = y_pred
         st.subheader("Rezultati napovedi")
         st.dataframe(output_df)
-        # Ponudimo prenos rezultata
+
         csv = output_df.to_csv(index=False).encode("utf-8")
         st.download_button(
             label="Prenesi napovedi kot CSV",
@@ -282,6 +276,7 @@ if st.checkbox("Prikaži korelacijsko matriko (numerične spremenljivke)"):
     fig, ax = plt.subplots(figsize=(12, 10))
     sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", ax=ax)
     st.pyplot(fig)
+
 
 if st.checkbox("Pomembnost značilk (RandomForest)"):
     rfr_model = models["rfr"][0]
