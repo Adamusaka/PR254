@@ -141,8 +141,11 @@ Za dodatno izboljšanje napovedi smo uporabili ansambelske tehnike, ki združuje
 Za ključne modele so bili hiperparametri nastavljeni na podlagi predhodnih eksperimentov in dobrih praks.
 
 **5.5. Metrika uspešnosti**
-Glavna metrika za ocenjevanje modelov je bila RMSLE - Root Mean Squared Logarithmic Error.
-$$ \text{RMSLE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (\log(p_i + 1) - \log(a_i + 1))^2} $$
+5.5. Metrika uspešnosti Glavna metrika za ocenjevanje modelov je bila RMSLE - Root Mean Squared Logarithmic Error.
+
+$$
+\text{RMSLE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (\log(p_i + 1) - \log(a_i + 1))^2}
+$$
 
 ## 6. Rezultati in diskusija
 
